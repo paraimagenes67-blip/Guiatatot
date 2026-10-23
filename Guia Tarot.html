@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guía Tarot - 78 Cartas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            gold: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+            },
+            mystic: {
+              900: '#0B0A16',
+              800: '#15122B',
+              700: '#211C42',
+              600: '#322B60',
+              accent: '#8B5CF6'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1a1638 0%, #08070e 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    /* Custom Scrollbar for horizontal card spread */
+    .custom-scroll::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 12, 29, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(234, 179, 8, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(234, 179, 8, 0.7);
+    }
+    /* Flip Transition */
+    .card-flipped {
+      transform: rotate(180deg);
+    }
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(234, 179, 8, 0.25);
+    }
+    .gold-border-glow {
+      border-color: rgba(234, 179, 8, 0.5);
+      box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-slate-200 pb-20">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-gold-500/20 bg-mystic-900/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-600 to-amber-300 flex items-center justify-center text-mystic-900 font-cinzel font-bold text-xl shadow-lg">
+          🔮
+        </div>
+        <div>
+          <h1 class="font-cinzel text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-200 via-gold-400 to-amber-100 bg-clip-text text-transparent">
+            Guía Tarot
+          </h1>
+          <p class="text-xs text-slate-400">Guía Completa de los 78 Arcanos</p>
+        </div>
+      </div>
+
+      <!-- Quick Stats / Actions -->
+      <div class="flex items-center gap-3">
+        <button onclick="clearSpread()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-all">
+          Limpiar Tirada
+        </button>
+        <button onclick="randomSpread(3)" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gold-500/50 bg-gold-500/10 text-gold-300 hover:bg-gold-500/20 transition-all flex items-center gap-1">
+          ✨ Tirada de 3 Cartas
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+    <!-- SEARCH & CATEGORY SUIT FILTER BAR -->
+    <section class="bg-mystic-800/80 rounded-2xl p-4 sm:p-6 border border-gold-500/20 shadow-xl backdrop-blur-md">
+      <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+        
+        <!-- Search Input -->
+        <div class="relative w-full md:w-80">
+          <input type="text" id="searchInput" oninput="filterCards()" placeholder="Buscar carta por nombre o palabra clave..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-mystic-900/90 border border-slate-700 rounded-xl focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-sm transition-all placeholder:text-slate-500">
+          <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex flex-wrap gap-1.5 w-full md:w-auto justify-center md:justify-end" id="suitFilterContainer">
+          <button onclick="setSuitFilter('all')" data-suit="all" class="suit-btn active px-3.5 py-2 rounded-xl text-xs font-semibold bg-gold-500 text-mystic-900 transition-all">
+            Todas (78)
+          </button>
+          <button onclick="setSuitFilter('major')" data-suit="major" class="suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all">
+            Arcanos Mayores (22)
+          </button>
+          <button onclick="setSuitFilter('wands')" data-suit="wands" class="suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all">
+            🪄 Bastos
+          </button>
+          <button onclick="setSuitFilter('cups')" data-suit="cups" class="suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all">
+            🏆 Copas
+          </button>
+          <button onclick="setSuitFilter('swords')" data-suit="swords" class="suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all">
+            ⚔️ Espadas
+          </button>
+          <button onclick="setSuitFilter('pentacles')" data-suit="pentacles" class="suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all">
+            🪙 Pentáculos
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 1: ALL CARDS GRID CATALOGUE (FIRST AS REQUESTED) -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-cinzel text-xl font-bold text-slate-200 flex items-center gap-2">
+          <span>🃏</span> Catálogo Completo (78 Cartas)
+        </h2>
+        <span id="gridCounter" class="text-xs text-slate-400 font-mono">Mostrando 78 cartas</span>
+      </div>
+
+      <!-- Main Cards Grid -->
+      <div id="cardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        <!-- Rendered dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: STICKY HORIZONTAL SPREAD DISPLAY ("TIRADA ACTUAL") -->
+    <section id="spreadSection" class="sticky bottom-4 z-30 transition-all">
+      <div class="bg-mystic-800/95 border-2 border-gold-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl gold-glow">
+        <div class="flex items-center justify-between mb-3 border-b border-slate-700/60 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">✨</span>
+            <h2 class="font-cinzel text-lg font-bold text-gold-400">Tirada Actual</h2>
+            <span id="spreadCountBadge" class="bg-gold-500/20 text-gold-300 border border-gold-500/30 text-xs px-2.5 py-0.5 rounded-full font-mono">0 cartas</span>
+          </div>
+          <span class="text-xs text-slate-400 hidden sm:inline">Desliza horizontalmente para ver todas ➔</span>
+        </div>
+
+        <!-- HORIZONTAL CARDS CONTAINER -->
+        <div id="spreadContainer" class="flex gap-4 overflow-x-auto custom-scroll pb-3 min-h-[180px] items-stretch">
+          <!-- Empty State -->
+          <div id="emptySpreadMsg" class="w-full flex flex-col items-center justify-center py-8 text-slate-500 border-2 border-dashed border-slate-700/50 rounded-xl">
+            <svg class="w-10 h-10 mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            <p class="text-sm font-medium">No has seleccionado ninguna carta</p>
+            <p class="text-xs text-slate-500 mt-1">Haz clic en cualquier carta del catálogo arriba para añadirla a tu lectura</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JS DATA & CONTROLLER LOGIC -->
+  <script>
+    // --- SAFE RIDER-WAITE IMAGE UTILITY WITH RELIABLE FALLBACKS ---
+    function getCardImageSvg(name) {
+      // Clean and safe SVG data URI fallback
+      var cleanName = name.replace(/["'&<>]/g, '');
+      var svgContent = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="340" viewBox="0 0 200 340">' +
+        '<rect width="200" height="340" fill="#1d1738" rx="12" stroke="#eab308" stroke-width="3"/>' +
+        '<rect x="10" y="10" width="180" height="320" fill="none" stroke="#ca8a04" stroke-width="1" stroke-dasharray="4 2"/>' +
+        '<text x="100" y="160" fill="#fde047" font-family="serif" font-size="28" text-anchor="middle">🔮</text>' +
+        '<text x="100" y="200" fill="#ffffff" font-family="sans-serif" font-size="13" font-weight="bold" text-anchor="middle">' + cleanName + '</text>' +
+        '</svg>';
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgContent);
+    }
+
+    // Direct Wikipedia/Wikimedia verified Rider-Waite SVG/JPG assets for all 78 cards
+    var tarotCards = [
+      // ARCANOS MAYORES (0-21)
+      { id: 0, suit: 'major', name: '0. El Loco', image: 'https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg', upright: 'Nuevos comienzos, inocencia, espontaneidad, espíritu libre, fe en el universo.', reversed: 'Reconsideración, imprudencia, riesgo innecesario, distracción.', yesNo: 'Sí' },
+      { id: 1, suit: 'major', name: 'I. El Mago', image: 'https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg', upright: 'Manifestación, recurso, poder, acción inspirada, destreza.', reversed: 'Ilusión, manipulación, talentos no aprovechados, planes confusos.', yesNo: 'Sí' },
+      { id: 2, suit: 'major', name: 'II. La Sacerdotisa', image: 'https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg', upright: 'Intuición, sagacidad, mente subconsciente, conocimiento interior, misterio.', reversed: 'Secretos, desconexión de la intuición, silencio defensivo.', yesNo: 'Sí' },
+      { id: 3, suit: 'major', name: 'III. La Emperatriz', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg', upright: 'Feminidad, belleza, naturaleza, abundancia, fertilidad, creación.', reversed: 'Bloqueo creativo, dependencia, descuido personal, falta de crecimiento.', yesNo: 'Sí' },
+      { id: 4, suit: 'major', name: 'IV. El Emperador', image: 'https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg', upright: 'Autoridad, estructura, control, liderazgo, disciplina, solidez.', reversed: 'Tiranía, rigidez, falta de disciplina, abuso de poder.', yesNo: 'Sí' },
+      { id: 5, suit: 'major', name: 'V. El Sumo Sacerdote', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg', upright: 'Tradición, conformismo, sabiduría compartida, guía espiritual, ética.', reversed: 'Rebeldía, nuevos enfoques, no conformidad, rigidez dogmática.', yesNo: 'Neutral / Quizás' },
+      { id: 6, suit: 'major', name: 'VI. Los Enamorados', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/RWS_Tarot_06_Lovers.jpg/250px-RWS_Tarot_06_Lovers.jpg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail', upright: 'Amor, armonía, relaciones, elecciones alineadas con valores, unión.', reversed: 'Desequilibrio, desalineación de valores, conflicto de decisiones.', yesNo: 'Sí' },
+      { id: 7, suit: 'major', name: 'VII. El Carro', image: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg', upright: 'Control, voluntad, éxito, determinación, victoria sobre obstáculos.', reversed: 'Falta de dirección, agresividad, pérdida de control, desorientación.', yesNo: 'Sí' },
+      { id: 8, suit: 'major', name: 'VIII. La Fuerza', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg', upright: 'Fuerza interior, valentía, compasión, paciencia, autocontrol.', reversed: 'Duda sobre uno mismo, debilidad, baja autoestima, impaciencia.', yesNo: 'Sí' },
+      { id: 9, suit: 'major', name: 'IX. El Ermitaño', image: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg', upright: 'Introspección, búsqueda de la verdad, guía interior, soledad constructiva.', reversed: 'Aislamiento excesivo, paranoia, rechazo de ayuda, distanciamiento.', yesNo: 'Neutral / Quizás' },
+      { id: 10, suit: 'major', name: 'X. La Rueda de la Fortuna', image: 'https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg', upright: 'Buena suerte, karma, ciclos de la vida, destino, cambio decisivo.', reversed: 'Mala suerte, resistencia al cambio, contratiempos temporales.', yesNo: 'Sí' },
+      { id: 11, suit: 'major', name: 'XI. La Justicia', image: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg', upright: 'Justicia, equidad, verdad, causa y efecto, ley, decisiones claras.', reversed: 'Injusticia, falta de responsabilidad, deshonestidad, sesgo.', yesNo: 'Neutral / Depende' },
+      { id: 12, suit: 'major', name: 'XII. El Colgado', image: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg', upright: 'Pausa, rendición, dejar ir, nuevas perspectivas, paciencia.', reversed: 'Resistencia, estancamiento innecesario, postergación.', yesNo: 'No' },
+      { id: 13, suit: 'major', name: 'XIII. La Muerte', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg', upright: 'Finales, transformación, transición, dejar ir lo viejo, renovación.', reversed: 'Resistencia al cambio, apego al pasado, miedo al futuro.', yesNo: 'No' },
+      { id: 14, suit: 'major', name: 'XIV. La Templanza', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg', upright: 'Equilibrio, moderación, paciencia, propósito, armonía interior.', reversed: 'Desequilibrio, exceso, falta de visión a largo plazo, impaciencia.', yesNo: 'Sí' },
+      { id: 15, suit: 'major', name: 'XV. El Diablo', image: 'https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg', upright: 'Apegos, adicción, materialismo, sombras, limitaciones autoimpuestas.', reversed: 'Liberación, recuperación del control, romper cadenas.', yesNo: 'No' },
+      { id: 16, suit: 'major', name: 'XVI. La Torre', image: 'https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg', upright: 'Cambio repentino, revelación, agitación, ruptura de ilusiones.', reversed: 'Evitación de desastre, retraso de lo inevitable, miedo al cambio.', yesNo: 'No' },
+      { id: 17, suit: 'major', name: 'XVII. La Estrella', image: 'https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg', upright: 'Esperanza, fe, propósito, renovación espiritual, serenidad.', reversed: 'Desesperanza, falta de fe, desánimo, desafección.', yesNo: 'Sí' },
+      { id: 18, suit: 'major', name: 'XVIII. La Luna', image: 'https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg', upright: 'Ilusión, miedo, ansiedad, intuición, incertidumbre, inconsciente.', reversed: 'Liberación de miedos, claridad, superación de la confusión.', yesNo: 'No' },
+      { id: 19, suit: 'major', name: 'XIX. El Sol', image: 'https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg', upright: 'Positividad, alegría, calor, éxito, vitalidad, confianza.', reversed: 'Optimismo exagerado, nubosidad temporal, falta de entusiasmo.', yesNo: 'Sí' },
+      { id: 20, suit: 'major', name: 'XX. El Juicio', image: 'https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg', upright: 'Juicio, renacimiento, llamada interior, absolución, despertar.', reversed: 'Duda interior, autocrítica severa, ignorar la llamada.', yesNo: 'Sí' },
+      { id: 21, suit: 'major', name: 'XXI. El Mundo', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/RWS_Tarot_21_World.jpg/960px-RWS_Tarot_21_World.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Completitud, integración, logro, viajes, satisfacción total.', reversed: 'Falta de cierre, metas incompletas, atajos frustrados.', yesNo: 'Sí' },
+
+      // BASTOS / WANDS (22-35)
+      { id: 22, suit: 'wands', name: 'As de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/1/11/Wands01.jpg', upright: 'Inspiración, poder, pasión, creatividad, nuevo comienzo enérgico.', reversed: 'Falta de energía, retraso de proyectos, falta de pasión.', yesNo: 'Sí' },
+      { id: 23, suit: 'wands', name: '2 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Wands02.jpg', upright: 'Planificación futura, progreso, decisiones, descubrimiento.', reversed: 'Miedo a lo desconocido, mala planificación, estancamiento.', yesNo: 'Sí' },
+      { id: 24, suit: 'wands', name: '3 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Wands03.jpg', upright: 'Expansión, previsión, horizontes abiertos, oportunidades.', reversed: 'Frustración, retrasos en viajes o planes, falta de visión.', yesNo: 'Sí' },
+      { id: 25, suit: 'wands', name: '4 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a4/Wands04.jpg', upright: 'Celebración, armonía, hogar, comunidad, estabilidad.', reversed: 'Tensión familiar, cancelación de eventos, inestabilidad en el hogar.', yesNo: 'Sí' },
+      { id: 26, suit: 'wands', name: '5 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Wands05.jpg', upright: 'Competencia, conflicto, rivalidad, diversidad de opiniones.', reversed: 'Evitar conflictos, resolución de disputas, reconciliación.', yesNo: 'No' },
+      { id: 27, suit: 'wands', name: '6 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Wands06.jpg', upright: 'Éxito, reconocimiento público, victoria, orgullo positivo.', reversed: 'Caída del pedestal, falta de reconocimiento, ego herido.', yesNo: 'Sí' },
+      { id: 28, suit: 'wands', name: '7 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Wands07.jpg', upright: 'Defensa, perseverancia, mantener la posición, convicción.', reversed: 'Sentirse abrumado, rendición, falta de confianza.', yesNo: 'Sí' },
+      { id: 29, suit: 'wands', name: '8 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Wands08.jpg', upright: 'Acción rápida, movimiento, noticias veloces, progreso.', reversed: 'Retrasos, decisiones apresuradas, pánico.', yesNo: 'Sí' },
+      { id: 30, suit: 'wands', name: '9 de Bastos', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Wands09.jpg/960px-Wands09.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Resiliencia, aguantar hasta el final, valentía frente a pruebas.', reversed: 'Agotamiento, paranoia, rendición antes de la meta.', yesNo: 'Sí' },
+      { id: 31, suit: 'wands', name: '10 de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Wands10.jpg', upright: 'Carga pesada, sobreesfuerzo, responsabilidad extrema.', reversed: 'Delegación de cargas, colapso por estrés, liberación.', yesNo: 'No' },
+      { id: 32, suit: 'wands', name: 'Sota de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Wands11.jpg', upright: 'Entusiasmo, exploración, mensajes inspiradores, libertad.', reversed: 'Imprudencia, proyectos sin terminar, desilusión.', yesNo: 'Sí' },
+      { id: 33, suit: 'wands', name: 'Caballo de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Wands12.jpg', upright: 'Pasión, aventura, audacia, impulso rápido.', reversed: 'Impaciencia, impulsividad destructiva, volatilidad.', yesNo: 'Sí' },
+      { id: 34, suit: 'wands', name: 'Reina de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Wands13.jpg', upright: 'Confianza, calidez, determinación, carisma, vitalidad.', reversed: 'Egoísmo, celos, mal genio, inseguridad.', yesNo: 'Sí' },
+      { id: 35, suit: 'wands', name: 'Rey de Bastos', image: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Wands14.jpg', upright: 'Liderazgo natural, visión, innovación, honor.', reversed: 'Impulsividad, expectativas irreales, autoritarismo.', yesNo: 'Sí' },
+
+      // COPAS / CUPS (36-49)
+      { id: 36, suit: 'cups', name: 'As de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Cups01.jpg', upright: 'Amor incondicional, compasión, intuición, desborde emocional.', reversed: 'Bloqueo emocional, amor propio insuficiente, desilusión.', yesNo: 'Sí' },
+      { id: 37, suit: 'cups', name: '2 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f8/Cups02.jpg', upright: 'Unión, asociación, reciprocidad, atracción mutua.', reversed: 'Ruptura, falta de comunicación, desequilibrio en pareja.', yesNo: 'Sí' },
+      { id: 38, suit: 'cups', name: '3 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Cups03.jpg', upright: 'Amistad, celebración, comunidad, reunión social.', reversed: 'Chismes, aislamiento, excesos festivos.', yesNo: 'Sí' },
+      { id: 39, suit: 'cups', name: '4 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/3/35/Cups04.jpg', upright: 'Apatía, contemplación, aburrimiento, ignorar oportunidades.', reversed: 'Nuevas perspectivas, aceptación de ayuda, motivación.', yesNo: 'No' },
+      { id: 40, suit: 'cups', name: '5 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Cups05.jpg', upright: 'Pérdida, lamento, enfoque en lo negativo, tristeza.', reversed: 'Aceptación, superación del duelo, ver el vaso medio lleno.', yesNo: 'No' },
+      { id: 41, suit: 'cups', name: '6 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/1/17/Cups06.jpg', upright: 'Nostalgia, recuentro, recuerdos de infancia, inocencia.', reversed: 'Vivir en el pasado, aferrarse al ayer, madurez requerida.', yesNo: 'Sí' },
+      { id: 42, suit: 'cups', name: '7 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Cups07.jpg', upright: 'Fantasías, opciones múltiples, ilusiones, dispersión.', reversed: 'Claridad de metas, toma de decisiones, despertar a la realidad.', yesNo: 'Neutral / Quizás' },
+      { id: 43, suit: 'cups', name: '8 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Cups08.jpg', upright: 'Búsqueda de significado, dejar atrás lo insatisfactorio.', reversed: 'Miedo al cambio, permanecer en situaciones tóxicas.', yesNo: 'No' },
+      { id: 44, suit: 'cups', name: '9 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/2/24/Cups09.jpg', upright: 'Deseos cumplidos, satisfacción, bienestar, abundancia.', reversed: 'Soberbia, insatisfacción interior, excesos sensuales.', yesNo: 'Sí' },
+      { id: 45, suit: 'cups', name: '10 de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/8/84/Cups10.jpg', upright: 'Felicidad familiar, paz interior, realización emocional.', reversed: 'Conflictos familiares, valores desalineados, desarmonía.', yesNo: 'Sí' },
+      { id: 46, suit: 'cups', name: 'Sota de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Cups11.jpg', upright: 'Creatividad, mensajes afectuosos, intuición joven.', reversed: 'Inmadurez emocional, hipersensibilidad, bloqueos.', yesNo: 'Sí' },
+      { id: 47, suit: 'cups', name: 'Caballo de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Cups12.jpg', upright: 'Romantisismo, encanto, propuestas del corazón, idealismo.', reversed: 'Decepción amorosa, manipulación emocional, ilusiones vanas.', yesNo: 'Sí' },
+      { id: 48, suit: 'cups', name: 'Reina de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/6/62/Cups13.jpg', upright: 'Empatía, cuidado, apoyo emocional, intuición profunda.', reversed: 'Inestabilidad emocional, codependencia, manipulación.', yesNo: 'Sí' },
+      { id: 49, suit: 'cups', name: 'Rey de Copas', image: 'https://upload.wikimedia.org/wikipedia/commons/0/04/Cups14.jpg', upright: 'Control emocional, sabiduría, compasión, diplomacia.', reversed: 'Volatilidad, chantaje emocional, frialdad calculada.', yesNo: 'Sí' },
+
+      // ESPADAS / SWORDS (50-63)
+      { id: 50, suit: 'swords', name: 'As de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Swords01.jpg', upright: 'Claridad mental, avance intelectual, verdad, victoria del pensamiento.', reversed: 'Confusión mental, mentiras, decisiones injustas.', yesNo: 'Sí' },
+      { id: 51, suit: 'swords', name: '2 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Swords02.jpg', upright: 'Dilema, estancamiento, bloqueo de emociones, evasión.', reversed: 'Sobrecarga de información, verdad al descubierto.', yesNo: 'No' },
+      { id: 52, suit: 'swords', name: '3 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/0/02/Swords03.jpg', upright: 'Corazón roto, dolor emocional, traición, rechazo.', reversed: 'Curación, perdón, superación del dolor.', yesNo: 'No' },
+      { id: 53, suit: 'swords', name: '4 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/b/bf/Swords04.jpg', upright: 'Descanso, meditación, recuperación, calma tras la tormenta.', reversed: 'Agotamiento extremo, necesidad urgente de pausa.', yesNo: 'Neutral' },
+      { id: 54, suit: 'swords', name: '5 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Swords05.jpg', upright: 'Conflictos, victoria pírrica, resentimiento, tensión.', reversed: 'Deseo de reconciliación, dejar ir el ego.', yesNo: 'No' },
+      { id: 55, suit: 'swords', name: '6 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Swords06.jpg', upright: 'Transición, dejar atrás tiempos difíciles, viaje sanador.', reversed: 'Equipaje emocional no resuelto, resistencia al avance.', yesNo: 'Sí' },
+      { id: 56, suit: 'swords', name: '7 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/3/34/Swords07.jpg', upright: 'Estrategia, cautela, secretos, actuar en solitario.', reversed: 'Confesión, engaño descubierto, cambio de táctica.', yesNo: 'No' },
+      { id: 57, suit: 'swords', name: '8 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Swords08.jpg', upright: 'Sentirse atrapado, victimismo, limitaciones mentales.', reversed: 'Apertura de ojos, libertad, empoderamiento.', yesNo: 'No' },
+      { id: 58, suit: 'swords', name: '9 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Swords09.jpg', upright: 'Ansiedad, pesadillas, insomnio, preocupación excesiva.', reversed: 'Superación del miedo, buscar ayuda, esperanza.', yesNo: 'No' },
+      { id: 59, suit: 'swords', name: '10 de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Swords10.jpg', upright: 'Final doloroso, tocar fondo, traición inesperada.', reversed: 'Resurrección, reconstrucción, fin de la racha mala.', yesNo: 'No' },
+      { id: 60, suit: 'swords', name: 'Sota de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Swords11.jpg', upright: 'Curiosidad mental, agilidad, vigilancia, nuevas ideas.', reversed: 'Espionaje, charlatanería, hablar sin pensar.', yesNo: 'Neutral' },
+      { id: 61, suit: 'swords', name: 'Caballo de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Swords12.jpg', upright: 'Ambición rápida, determinación impulsiva, franqueza.', reversed: 'Precipitación, brusquedad, agresión verbal.', yesNo: 'No' },
+      { id: 62, suit: 'swords', name: 'Reina de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Swords13.jpg', upright: 'Objetividad, intelecto afilado, independencia, veracidad.', reversed: 'Frialdad, crueldad verbal, amargura.', yesNo: 'Sí' },
+      { id: 63, suit: 'swords', name: 'Rey de Espadas', image: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Swords14.jpg', upright: 'Verdad, autoridad intelectual, justicia imparcial, lógica.', reversed: 'Abuso de poder mental, manipulación, rigidez.', yesNo: 'Sí' },
+
+      // PENTÁCULOS / OROS / PENTACLES (64-77)
+      { id: 64, suit: 'pentacles', name: 'As de Pentáculos', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/RWS1909_-_Pentacles_01.jpeg/960px-RWS1909_-_Pentacles_01.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Nueva oportunidad financiera, prosperidad, solidez material.', reversed: 'Oportunidad perdida, mala inversión, inestabilidad.', yesNo: 'Sí' },
+      { id: 65, suit: 'pentacles', name: '2 de Pentáculos', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Two_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png/960px-Two_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Equilibrio de recursos, adaptabilidad, malabarismo financiero.', reversed: 'Sobrecarga, desorganización financiera, estrés.', yesNo: 'Sí' },
+      { id: 66, suit: 'pentacles', name: '3 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Pents03.jpg', upright: 'Trabajo en equipo, colaboración, habilidad, maestría.', reversed: 'Falta de cooperación, trabajo deficiente, desacuerdos.', yesNo: 'Sí' },
+      { id: 67, suit: 'pentacles', name: '4 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/3/35/Pents04.jpg', upright: 'Seguridad, ahorro, posesividad, estabilidad económica.', reversed: 'Avaricia, miedo a la escasez, gastos impulsivos.', yesNo: 'Neutral / Depende' },
+      { id: 68, suit: 'pentacles', name: '5 de Pentáculos', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Five_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png/960px-Five_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Dificultad financiera, aislamiento, sensación de escasez.', reversed: 'Recuperación económica, ayuda en camino, renovación.', yesNo: 'No' },
+      { id: 69, suit: 'pentacles', name: '6 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a6/Pents06.jpg', upright: 'Generosidad, dar y recibir, equilibrio material, caridad.', reversed: 'Deudas, generosidad con condiciones, desigualdad.', yesNo: 'Sí' },
+      { id: 70, suit: 'pentacles', name: '7 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Pents07.jpg', upright: 'Paciencia, inversión a largo plazo, evaluación del progreso.', reversed: 'Impaciencia, falta de resultados, esfuerzo desperdiciado.', yesNo: 'Sí' },
+      { id: 71, suit: 'pentacles', name: '8 de Pentáculos', image: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Eight_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png/960px-Eight_of_Pentacles_%28Rider-Waite_Smith_tarot_deck%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail', upright: 'Dedicación, aprendizaje, perfeccionamiento de habilidades.', reversed: 'Falta de esfuerzo, atajos dudosos, aburrimiento laboral.', yesNo: 'Sí' },
+      { id: 72, suit: 'pentacles', name: '9 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Pents09.jpg', upright: 'Independencia financiera, lujo, disfrute de los frutos del trabajo.', reversed: 'Inseguridad material, gastos excesivos, soledad.', yesNo: 'Sí' },
+      { id: 73, suit: 'pentacles', name: '10 de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Pents10.jpg', upright: 'Riqueza familiar, legado, abundancia duradera, tradición.', reversed: 'Disputas por herencias, inestabilidad familiar.', yesNo: 'Sí' },
+      { id: 74, suit: 'pentacles', name: 'Sota de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Pents11.jpg', upright: 'Estudio, buenas noticias financieras, ambición joven.', reversed: 'Falta de progreso, procrastinación, desorganización.', yesNo: 'Sí' },
+      { id: 75, suit: 'pentacles', name: 'Caballo de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Pents12.jpg', upright: 'Trabajo duro, rutina, lealtad, perseverancia metódica.', reversed: 'Testarudez, aburrimiento, estancamiento total.', yesNo: 'Sí' },
+      { id: 76, suit: 'pentacles', name: 'Reina de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Pents13.jpg', upright: 'Nutrición, practicidad, hospitalidad, abundancia del hogar.', reversed: 'Desequilibrio entre trabajo y hogar, dependencia.', yesNo: 'Sí' },
+      { id: 77, suit: 'pentacles', name: 'Rey de Pentáculos', image: 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Pents14.jpg', upright: 'Éxito empresarial, seguridad, maestría financiera, visión práctica.', reversed: 'Codicia, materialismo extremo, terquedad financiera.', yesNo: 'Sí' }
+    ];
+
+    // STATE CONTROL
+    var spreadState = [];
+    var currentSuitFilter = 'all';
+
+    // INITIALIZATION
+    window.onload = function() {
+      renderCatalogueGrid();
+      updateSpreadUI();
+    };
+
+    // FILTER CARDS FUNCTIONALITY
+    function setSuitFilter(suit) {
+      currentSuitFilter = suit;
+      document.querySelectorAll('.suit-btn').forEach(function(btn) {
+        if(btn.dataset.suit === suit) {
+          btn.className = "suit-btn active px-3.5 py-2 rounded-xl text-xs font-semibold bg-gold-500 text-mystic-900 transition-all shadow-md shadow-gold-500/20";
+        } else {
+          btn.className = "suit-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-mystic-900/80 border border-slate-700 text-slate-300 hover:border-gold-500/50 transition-all";
+        }
+      });
+      filterCards();
+    }
+
+    function filterCards() {
+      var query = document.getElementById('searchInput').value.toLowerCase().trim();
+      var filtered = tarotCards.filter(function(card) {
+        var matchesSuit = (currentSuitFilter === 'all') || (card.suit === currentSuitFilter);
+        var matchesQuery = card.name.toLowerCase().indexOf(query) !== -1 || 
+                             card.upright.toLowerCase().indexOf(query) !== -1 || 
+                             card.reversed.toLowerCase().indexOf(query) !== -1;
+        return matchesSuit && matchesQuery;
+      });
+
+      renderCatalogueGrid(filtered);
+    }
+
+    // RENDER CATALOGUE GRID
+    function renderCatalogueGrid(cardsToRender) {
+      cardsToRender = cardsToRender || tarotCards;
+      var container = document.getElementById('cardsGrid');
+      var counter = document.getElementById('gridCounter');
+      counter.textContent = 'Mostrando ' + cardsToRender.length + ' cartas';
+
+      if(cardsToRender.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400">No se encontraron cartas que coincidan con tu búsqueda.</div>';
+        return;
+      }
+
+      container.innerHTML = cardsToRender.map(function(card) {
+        var safeName = card.name.replace(/"/g, '&quot;');
+        return '<div onclick="addCardToSpread(' + card.id + ')" ' +
+             'class="group relative bg-mystic-800/90 border border-slate-700/80 hover:border-gold-500/60 rounded-xl p-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gold-500/10 cursor-pointer flex flex-col justify-between">' +
+          '<div class="aspect-[9/16] overflow-hidden rounded-lg bg-mystic-900 relative mb-2">' +
+            '<img src="' + card.image + '" alt="' + safeName + '" loading="lazy" ' +
+                 'data-name="' + safeName + '" ' +
+                 'onerror="this.onerror=null; this.src=getCardImageSvg(this.getAttribute(\'data-name\'));" ' +
+                 'class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">' +
+          '</div>' +
+          '<div>' +
+            '<h3 class="font-cinzel text-xs font-bold text-slate-200 group-hover:text-gold-400 truncate">' + card.name + '</h3>' +
+            '<span class="text-[10px] text-slate-400 block mt-0.5">Si/No: <strong class="text-gold-400">' + card.yesNo + '</strong></span>' +
+          '</div>' +
+          '<button class="mt-2 w-full py-1 text-[11px] font-semibold bg-mystic-700 hover:bg-gold-500 hover:text-mystic-900 text-slate-300 rounded-md transition-colors flex items-center justify-center gap-1">' +
+            '<span>+</span> Añadir' +
+          '</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    // SPREAD MANAGEMENT (TIRADA ACTUAL)
+    function addCardToSpread(cardId) {
+      var card = tarotCards.find(function(c) { return c.id === cardId; });
+      if(!card) return;
+
+      var instanceId = 'spread_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+      spreadState.push({
+        card: card,
+        isReversed: false,
+        instanceId: instanceId
+      });
+
+      updateSpreadUI();
+      
+      // Auto-scroll to the right in the spread container
+      setTimeout(function() {
+        var spreadContainer = document.getElementById('spreadContainer');
+        if (spreadContainer) {
+          spreadContainer.scrollTo({ left: spreadContainer.scrollWidth, behavior: 'smooth' });
+        }
+      }, 50);
+    }
+
+    function toggleFlip(instanceId) {
+      var item = spreadState.find(function(s) { return s.instanceId === instanceId; });
+      if(item) {
+        item.isReversed = !item.isReversed;
+        updateSpreadUI();
+      }
+    }
+
+    function removeFromSpread(instanceId) {
+      spreadState = spreadState.filter(function(s) { return s.instanceId !== instanceId; });
+      updateSpreadUI();
+    }
+
+    function clearSpread() {
+      spreadState = [];
+      updateSpreadUI();
+    }
+
+    function randomSpread(count) {
+      count = count || 3;
+      spreadState = [];
+      var shuffled = [...tarotCards].sort(function() { return 0.5 - Math.random(); });
+      var selected = shuffled.slice(0, count);
+      
+      selected.forEach(function(card) {
+        spreadState.push({
+          card: card,
+          isReversed: Math.random() > 0.5,
+          instanceId: 'spread_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)
+        });
+      });
+
+      updateSpreadUI();
+    }
+
+    // UPDATE HORIZONTAL SPREAD DISPLAY ("TIRADA ACTUAL")
+    function updateSpreadUI() {
+      var container = document.getElementById('spreadContainer');
+      var countBadge = document.getElementById('spreadCountBadge');
+
+      countBadge.textContent = spreadState.length + ' ' + (spreadState.length === 1 ? 'carta' : 'cartas');
+
+      if (spreadState.length === 0) {
+        container.innerHTML = '<div id="emptySpreadMsg" class="w-full flex flex-col items-center justify-center py-8 text-slate-500 border-2 border-dashed border-slate-700/50 rounded-xl">' +
+            '<svg class="w-8 h-8 mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+              '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>' +
+            '</svg>' +
+            '<p class="text-xs sm:text-sm font-medium">No has seleccionado ninguna carta</p>' +
+            '<p class="text-[11px] text-slate-500 mt-0.5">Selecciona cartas arriba para crear tu lectura en horizontal</p>' +
+          '</div>';
+        return;
+      }
+
+      // Render cards HORIZONTALLY side-by-side
+      container.innerHTML = spreadState.map(function(item, index) {
+        var card = item.card;
+        var isReversed = item.isReversed;
+        var instanceId = item.instanceId;
+        var safeName = card.name.replace(/"/g, '&quot;');
+
+        return '<div class="flex-none w-[260px] sm:w-[290px] bg-mystic-900/90 border border-gold-500/30 rounded-xl p-3 flex flex-col justify-between shadow-xl relative group">' +
+            '<!-- Top Controls Badge -->' +
+            '<div class="flex items-center justify-between mb-2">' +
+              '<span class="text-[10px] font-mono uppercase tracking-wider text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20">' +
+                'Posición #' + (index + 1) +
+              '</span>' +
+              '<button onclick="removeFromSpread(\'' + instanceId + '\')" title="Quitar carta" ' +
+                'class="text-slate-400 hover:text-red-400 transition-colors p-1 text-sm font-bold">' +
+                '✕' +
+              '</button>' +
+            '</div>' +
+
+            '<!-- Card Image & Flip Action -->' +
+            '<div class="flex gap-3 items-start mb-3">' +
+              '<div class="w-20 h-32 flex-none bg-mystic-950 rounded-lg overflow-hidden border border-slate-700 relative shadow-inner">' +
+                '<img src="' + card.image + '" alt="' + safeName + '" ' +
+                     'data-name="' + safeName + '" ' +
+                     'onerror="this.onerror=null; this.src=getCardImageSvg(this.getAttribute(\'data-name\'));" ' +
+                     'class="w-full h-full object-cover transition-transform duration-500 ' + (isReversed ? 'rotate-180' : '') + '">' +
+              '</div>' +
+
+              '<div class="flex-1 min-w-0">' +
+                '<h3 class="font-cinzel text-sm font-bold text-slate-100 truncate">' + card.name + '</h3>' +
+                
+                '<div class="mt-1.5 flex items-center gap-1">' +
+                  '<span class="text-[11px] font-semibold ' + (isReversed ? 'text-amber-400' : 'text-emerald-400') + '">' +
+                    (isReversed ? '🔄 Invertida' : '✨ Al Derecho') +
+                  '</span>' +
+                '</div>' +
+
+                '<p class="text-[10px] text-slate-400 mt-1">' +
+                  '<strong>Respuesta:</strong> <span class="text-gold-300 font-semibold">' + card.yesNo + '</span>' +
+                '</p>' +
+
+                '<!-- Flip Toggle Button -->' +
+                '<button onclick="toggleFlip(\'' + instanceId + '\')" ' +
+                  'class="mt-2 text-[10px] w-full py-1 px-2 rounded bg-mystic-700/80 hover:bg-gold-500 hover:text-mystic-900 border border-slate-600 transition-colors flex items-center justify-center gap-1 font-medium">' +
+                  '🔄 Voltear' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<!-- Meanings Summary Box -->' +
+            '<div class="bg-mystic-800/80 rounded-lg p-2.5 border border-slate-700/50 text-[11px] leading-relaxed space-y-1.5">' +
+              '<div>' +
+                '<span class="text-emerald-400 font-semibold block text-[10px] uppercase tracking-wider">Significado Al Derecho:</span>' +
+                '<p class="text-slate-300 ' + (!isReversed ? 'font-medium text-slate-100' : 'opacity-70') + '">' + card.upright + '</p>' +
+              '</div>' +
+              '<div class="border-t border-slate-700/50 pt-1.5">' +
+                '<span class="text-amber-400 font-semibold block text-[10px] uppercase tracking-wider">Significado Invertido:</span>' +
+                '<p class="text-slate-300 ' + (isReversed ? 'font-medium text-slate-100' : 'opacity-70') + '">' + card.reversed + '</p>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>';
+      }).join('');
+    }
+  </script>
+</body>
+</html>
